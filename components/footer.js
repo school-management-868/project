@@ -1,6 +1,6 @@
 export default function Footer() {
     return (
-            <footer class="p-4 bg-white shadow md:px-6 md:py-8 dark:bg-gray-900 fixed
+            <footer class="p-4 bg-white shadow md:px-6 md:py-8 dark:bg-gray-900
             inset-x-0
             bottom-0">
     <div class="sm:flex sm:items-center sm:justify-between">
