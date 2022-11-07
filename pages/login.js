@@ -1,34 +1,37 @@
-import { app } from "../firebase";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail
-} from "firebase/auth";
+import { useAuth } from "../firebase/auth/authProvider";
 import Loading from "../components/loading";
-
+import firebase from "../firebase";
+import {
+  AuthCredential,
+  signInWithEmailAndPassword,
+  getAuth,
+} from "firebase/auth";
+import Auth from "../firebase";
+// import {auth} from '../firebase'
 export default function Login() {
-  const auth = getAuth();
-  const user = auth.currentUser;
+  useEffect(() => {
+    console.log();
+  });
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setLoading] = useState(false);
-  const router = useRouter()
-  useEffect(()=>{
-    if(user){
-        router.push("/home")
+  const router = useRouter();
+  const { handleForgetPassword, isLoading, authUser } = useAuth();
+  useEffect(() => {
+    if (authUser) {
+      router.push("/home");
     }
-  }, [])
+  }, []);
+  // const auth = getAuth();
 
-  const handleSignIn = async (e) => {
-    setLoading(true);
-    e.preventDefault();
-    await signInWithEmailAndPassword(auth, email, password)
+  const handleSignIn = async (email, password) => {
+    alert(email, password);
+    // setIsLoading(true);
+    await signInWithEmailAndPassword(Auth, "email", "password")
       .then((userCredential) => {
-        const user = userCredential.user;
         alert("Success");
       })
       .catch((error) => {
@@ -36,32 +39,12 @@ export default function Login() {
         const errorMessage = error.message;
         alert("ERROR : " + errorMessage);
       });
-    setLoading(false);
-  };
-
-  const handleForgetPassword = async (e) => {
-    setLoading(true);
-    if (!email) {
-      alert("Enter Your Mail Id");
-      setLoading(false);
-      return;
-    }
-
-    await sendPasswordResetEmail(auth, email)
-      .then(() => {
-        alert("Check You Mail : " + email);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        alert(errorMessage);
-      });
-    setLoading(false);
+    // setIsLoading(false);
   };
 
   return (
     <>
-      {user && <h1>{user.name}</h1>}
+      {authUser && <h1>{authUser.name}</h1>}
 
       <div>
         <div className="flex flex-col items-center min-h-screen pt-6 pb-0 sm:justify-top sm:pt-25 bg-gray-50">
@@ -71,11 +54,9 @@ export default function Login() {
             </a>
           </div>
           <div className="w-full px-6 py-4 mt-6 overflow-hidden bg-white shadow-md sm:max-w-lg sm:rounded-lg">
-            <form
-              onSubmit={(e) => {
-                handleSignIn(e);
-              }}
-            >
+            <form onSubmit={(e) => {
+                      handleSignIn(email, password);
+                    }}>
               <div className="mt-4">
                 <label
                   htmlFor="email"
@@ -114,7 +95,7 @@ export default function Login() {
               </div>
               <button
                 onClick={(e) => {
-                  handleForgetPassword(e);
+                  handleForgetPassword(e, email);
                 }}
               >
                 <a href="#" className="text-xs text-purple-600 hover:underline">
@@ -137,15 +118,14 @@ export default function Login() {
             <div className="mt-4 text-grey-600">
               <span>
                 <div className="mt-4 text-grey-600">
-              Already have an account?{" "}
-                <Link href="/signup">
-                  <a className="text-purple-600 hover:underline" href="#">
-                    Sign up
-                  </a>
-                </Link>
+                  Already have an account?{" "}
+                  <Link href="/signup">
+                    <a className="text-purple-600 hover:underline" href="#">
+                      Sign up
+                    </a>
+                  </Link>
                 </div>
               </span>
-              
             </div>
             <div className="flex items-center w-full my-4">
               <hr className="w-full" />

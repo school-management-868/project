@@ -1,10 +1,9 @@
 import { Fragment } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import Link from "next/link";
-import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
-import { app } from "../firebase";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useAuth } from "../firebase/auth/authProvider";
 
 import {
   ArrowPathIcon,
@@ -104,32 +103,22 @@ function classNames(...classes) {
 }
 
 export default function Header() {
-  const auth = getAuth();
-  const [user, setUser] = useState("")
-  const router = useRouter();
-  useEffect(() => {
-    onAuthStateChanged(auth, (userr) => {
-      if(userr) {
-      setUser(userr);
-      } else {
-        setUser(null);
-      }
-    });
-  },[user]);
-
+  const { handleSignOut, authUser, isLoading } = useAuth();
   return (
     <Popover className="relative bg-white z-10">
       <div className="mx-auto max-w-10xl px-4 sm:px-6">
         <div className="flex items-center justify-between border-b-2 border-gray-100 py-6 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
-            <a href="#">
-              <span className="sr-only">Your Company</span>
-              <img
-                className="h-8 w-auto sm:h-10"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                alt=""
-              />
-            </a>
+            <Link href="/">
+              <a href="#">
+                <span className="sr-only">Your Company</span>
+                <img
+                  className="h-8 w-auto sm:h-10"
+                  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                  alt=""
+                />
+              </a>
+            </Link>
           </div>
           <div className="-my-2 -mr-2 md:hidden">
             <Popover.Button className="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
@@ -317,17 +306,17 @@ export default function Header() {
             </Popover>
           </Popover.Group>
           <div className="hidden items-center justify-end md:flex md:flex-1 lg:w-0">
-            {user && (
+            {authUser && (
               <Link href="/home">
                 <a
                   href="#"
                   className="whitespace-nowrap text-base font-medium text-gray-500 hover:text-gray-900"
                 >
-                  {user.displayName}
+                  {authUser.displayName}
                 </a>
               </Link>
             )}
-            {!user && (
+            {!authUser && (
               <Link href="/login">
                 <a
                   href="#"
@@ -337,17 +326,10 @@ export default function Header() {
                 </a>
               </Link>
             )}
-            {user && (
+            {authUser && (
               <button
                 onClick={(e) => {
-                  signOut()
-                    .then(() => {
-                      alert("Successfully Logout");
-                      router.push("/");
-                    })
-                    .catch((e) => {
-                      alert(e.message);
-                    });
+                  handleSignOut();
                 }}
               >
                 <a
@@ -358,7 +340,7 @@ export default function Header() {
                 </a>
               </button>
             )}
-            {!user && (
+            {!authUser && (
               <Link href="/signup">
                 <a
                   href="#"

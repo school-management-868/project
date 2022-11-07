@@ -1,59 +1,26 @@
 import React from "react";
-import { app } from "../firebase";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-} from "firebase/auth";
+import { useAuth } from "../firebase/auth/authProvider";
 import Loading from "../components/loading";
 
 export default function Signup() {
-  const auth = getAuth();
-  const user = auth.currentUser;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setLoading] = useState(false);
-  const router = useRouter()
-  useEffect(()=>{
-    if(user){
-        router.push("/home")
+  const router = useRouter();
+  const {handleSignup,  isLoading, authUser} = useAuth();
+  useEffect(() => {
+    if (authUser) {
+      router.push("/home");
     }
-  }, [])
-
-  const handleSignup = async (e) => {
-    setLoading(true);
-    e.preventDefault();
-    await createUserWithEmailAndPassword(auth, email, password)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        // update profile details
-        await updateProfile(user, {
-          displayName: name,
-          phoneNumber: "+91" + mobile,
-        })
-          .then(() => {})
-          .catch((error) => {
-            alert(error.message);
-          });
-        alert("Success");
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        alert("ERROR : " + errorMessage);
-      });
-    setLoading(false);
-  };
+  }, []);
 
   return (
     <>
-      {user && <h1>{user.name}</h1>}
-      {!user && <h1>NOT LOGGED IN</h1>}
+      {authUser && <h1>{authUser.name}</h1>}
+      {!authUser && <h1>NOT LOGGED IN</h1>}
       <div>
         <div className="flex flex-col items-center min-h-screen pt-6 sm:justify-top sm:pt-25 bg-gray-50">
           <div>
@@ -64,7 +31,7 @@ export default function Signup() {
           <div className="w-full px-6 py-4 mt-6 overflow-hidden bg-white shadow-md sm:max-w-lg sm:rounded-lg">
             <form
               onSubmit={(e) => {
-                handleSignup(e);
+                handleSignup(e, email, password,name , mobile );
               }}
             >
               <div>
@@ -152,9 +119,7 @@ export default function Signup() {
                     Register
                   </button>
                 )}
-                {isLoading && (
-                  <Loading/>
-                )}
+                {isLoading && <Loading />}
               </div>
             </form>
             <div className="mt-4 text-grey-600">
